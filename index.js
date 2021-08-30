@@ -1,63 +1,45 @@
 const express = require('express')
 const morgan = require('morgan')
-
+const Person = require('./modules/person')
+require('dotenv').config()
 const app = express()
 const PORT = process.env.PORT || 3001
-
 app.use(express.json())
 app.use(express.static('build'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :content-person'))
 
-let persons = [
-    {
-        id:1,
-        name: "Arto Hellas",
-        number: "040-123456"    
-    },
-    {
-        id:2,
-        name: "Ada Lovelace",
-        number: "39-44-5323523"    
-    },
-    {
-        id:3,
-        name: "Dan Abramov",
-        number: "12-43-234345"    
-    },
-    {
-        id:4,
-        name: "Mary Poppendick",
-        number: "30-23-6423122"    
-    }
-]
-
 app.get('/api/persons',(request,response)=>{
-    response.json(persons)
+    Person.find({}).then(persons => response.json(persons) )
+    
 })
 
 app.get('/api/persons/:id',(request,response)=>{
-    const id = +request.params.id
-    const person = persons.find(person => person.id === id)
-    person ? response.json(person) : response.status(404).end() 
+    const id = request.params.id
+    Person.findById(id)
+        .then(person => {
+            person ? response.json(person) : response.status(404).end()    
+        })
+        .catch(error => {
+            console.log(error)
+            response.status(500).end()
+        })
     
 })
 
 app.post('/api/persons',(request,response)=>{
-    const id = Math.floor(Math.random()*1000)
-    const person = request.body
-    if(!person.name || !person.number){
+    const body = request.body
+    if(!body.name || !body.number){
         return response.status(400).json({
             error: "missing name or number"
         })
     }
-    if(persons.find(personF => personF.name === person.name)){
-        return response.status(400).json({
-            error: "name must be unique"
-        })
-    }
-    person.id = id
-    persons = persons.concat(person)
-    response.json(person)
+
+    const person = new Person({
+        name:body.name,
+        number:body.number
+    })
+    person.save().then(savedPerson => response.json(savedPerson))
+        
 })
 
 app.delete('/api/persons/:id',(request,response)=>{
