@@ -1,6 +1,8 @@
 const express = require('express')
 const morgan = require('morgan')
 const Person = require('./modules/person')
+const errorHandler = require('./errorHandler')
+
 require('dotenv').config()
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -13,15 +15,15 @@ app.get('/api/persons',(request,response)=>{
     
 })
 
-app.get('/api/persons/:id',(request,response)=>{
+app.get('/api/persons/:id',(request,response,next)=>{
     const id = request.params.id
     Person.findById(id)
         .then(person => {
             person ? response.json(person) : response.status(404).end()    
         })
         .catch(error => {
-            console.log(error)
-            response.status(500).end()
+            // console.log(error)
+            next(error)
         })
     
 })
@@ -61,16 +63,7 @@ morgan.token('content-person',(req,res)=>{
 const unknownEndpoint = (req,res) =>{
     res.status(404).send({error:"unknown endpoint"})
 }
-const errorHandler = (error, request, response, next) => {
-    console.error(error.message)
-  
-    if (error.name === 'CastError') {
-      return response.status(400).send({ error: 'malformatted id' })
-    } 
-  
-    next(error)
-  }
-  
+
   app.use(unknownEndpoint)
   app.use(errorHandler)
 
