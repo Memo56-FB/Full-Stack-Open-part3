@@ -28,19 +28,16 @@ app.get('/api/persons/:id',(request,response,next)=>{
     
 })
 
-app.post('/api/persons',(request,response)=>{
+app.post('/api/persons',(request,response,next)=>{
     const body = request.body
-    if(!body.name || !body.number){
-        return response.status(400).json({
-            error: "missing name or number"
-        })
-    }
 
     const person = new Person({
         name:body.name,
         number:body.number
     })
-    person.save().then(savedPerson => response.json(savedPerson))
+    person.save()
+        .then(savedPerson => response.json(savedPerson.toJSON()))
+        .catch(error => next(error))
         
 })
 
