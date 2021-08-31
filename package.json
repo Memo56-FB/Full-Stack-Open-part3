@@ -6,12 +6,14 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "Guillermo Farfan <memo56_fb@hotmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "eslint": "^7.32.0",
     "nodemon": "^2.0.12"
   },
   "dependencies": {
